@@ -45,7 +45,7 @@ def bruteforce():
                 is_allowed = False
                 break
         if is_allowed:
-            yield ' '.join(combination_str + '?')
+            yield ' - '.join(combination_str + '?')
 
 def smarter(_index: int=0, _previous: list=None):
     '''Trouve les nombres à deux chiffres possibles en fonction des contraintes'''
@@ -57,7 +57,7 @@ def smarter(_index: int=0, _previous: list=None):
         for digit in [ allowed[_index][i] for i in range(len(allowed[_index])) if allowed[_index][i] // 10 == first_digit ]:
             combination = _previous + [ digit ]
             if _index == 3:
-                combination_str = ' '.join(f'{combination[0]:>02}' + ''.join(map(lambda x: str(x % 10), combination[1:]))) + ' ?'
+                combination_str = ' - '.join(f'{combination[0]:>02}' + ''.join(map(lambda x: str(x % 10), combination[1:]))) + ' - ?'
                 yield combination_str
             else:
                 yield from smarter(_index + 1, combination)
@@ -71,3 +71,7 @@ if __name__ == '__main__':
     print('-- smarter --')
     for combination in smarter():
         print(combination)
+    
+    '''
+    La solution est à chercher dans la structure qui ressort de l'ensemble des combinaisons.
+    '''
