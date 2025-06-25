@@ -1,4 +1,4 @@
-# Engime 57 : les troid dames
+# Engime 57 : les trois dames
 
 Cette énigme est vraiment agréable à coder. Elle fait appel à trois concepts distincts :
 - La génération de l'ensemble des positions possibles des trois dames
