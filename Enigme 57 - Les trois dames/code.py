@@ -18,7 +18,7 @@ from math import ceil
 from typing import Iterable
 from functools import partial
 
-scores = (
+expected_scores = (
     [ 2, 2, 3, 1, 1 ]
   + [ 2, 1, 2, 2, 3 ]
   + [ 1, 2, 3, 1, 1 ]
@@ -40,15 +40,15 @@ def gridstring(elements: Iterable, columns: int) -> str:
 
 grid5str = partial(gridstring, columns=5)
 
-def positions(pawns: int, slots: range, _others: list=None):
+def positions(pawns: int, slots: range, _other_positions: list=None):
     '''
     Retourne toutes les combinaisons des index où peuvent se trouver
     pawns pions parmi slots cases'''
-    if _others is None:
-        _others = [ ]
+    if _other_positions is None:
+        _other_positions = [ ]
     if pawns < len(slots) + 1:
         for slot in slots:
-            actual_positions = _others + [ slot ]
+            actual_positions = _other_positions + [ slot ]
             if pawns == 1:
                 yield actual_positions
             else:
@@ -67,17 +67,34 @@ class ScoreGrid:
         Retourne la grille des scores de la position de la dame
         '''
         # Initialisation des scores de la position
-        score = [ 0 ] * 25
+        scores = [ 0 ] * 25
         # On trouve la ligne et la colonne de notre index...
         line, column = divmod(index, 5)
-        # Score de la ligne
+        # Scores de la ligne
         for i in range(line * 5, (line + 1) * 5):
-            score[i] = 1
-        # Score de colonne
+            scores[i] = 1
+        # Scores de colonne
         for i in range(column, 25, 5):
-            score[i] = 1
-        # TODO : scores des diagonales
-        return score
+            scores[i] = 1
+        # On calcule les index de début et de fin des diagonales
+        top_left = index - (min(line, column) * 6)
+        bottom_right = index + ((4 - max(line, column)) * 6)
+        if (4 - column) >= line:
+            top_right = index - (line * 4)
+            bottom_left = index + (column * 4)
+        else:
+            top_right = index - ((4 - column) * 4)
+            bottom_left = index + ((4 - line) * 4)
+        # Premier et dernier index des diagonales
+        diagonal1 = (top_left, bottom_right)
+        diagonal2 = (top_right, bottom_left)
+        # Première diagonale : décalage de 6 entre les index
+        for i in range(diagonal1[0], diagonal1[1] + 1, 6):
+            scores[i] = 1
+        # Seconde diagonale : décalage de 4 entre les index
+        for i in range(diagonal2[0], diagonal2[1] + 1, 4):
+            scores[i] = 1
+        return scores
 
     def set_queen(self, index: int) -> None:
         if index in self.queens:
@@ -86,18 +103,29 @@ class ScoreGrid:
             raise ValueError(f'Index must be in {range(25)}, not {index}')
         self.queens.append(index)
         queen_score = self._get_scores(index)
-        print(grid5str(queen_score))
+        # print(grid5str(queen_score))
         for i in range(25):
             self.scores[i] += queen_score[i]
 
-
-S = ScoreGrid(3, 10, 17, 23, 15, 19)
-print(grid5str(S.scores))
-# print(grid5str(range(25)))
-# for p in positions(pawns=5, slots=range(7)):
-#     print(p)
-# for p in positions(pawns=3, slots=range(25)):
-#     elements = [ ' ' ] * 25
-#     for index in p:
-#         elements[index] = 'X'
-#     print(grid5str(elements))
+if __name__ == '__main__':
+    import time
+    print('Recherche des positions des dames')
+    print()
+    print('Tableau des scores attendu :')
+    print(grid5str(expected_scores))
+    print()
+    count, solutions = 0, 0
+    start = time.time()
+    for position in positions(3, range(25)):
+        count += 1
+        grid = ScoreGrid(*position)
+        if grid.scores == expected_scores:
+            solutions += 1
+            print('Combinaison trouvée :')
+            board = [ ' ' ] * 25
+            for p in position:
+                board[p] = 'X'
+            print(grid5str(board))
+            print()
+    elapsed = time.time() - start
+    print(f'{count} combinaisons testées, {solutions} solution(s) trouvée(s) en {elapsed} secondes.')
