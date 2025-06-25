@@ -27,7 +27,10 @@ expected_scores = (
 )
 
 def gridstring(elements: Iterable, columns: int) -> str:
-    '''Retourne la liste elements sous forme de grille de columns colonnes'''
+    '''
+    Retourne la chaîne représentant les éléments elements
+    dans une grille de columns colonnes.
+    '''
     lines = ceil(len(elements) / columns)
     width = max([ len(str(element)) for element in elements ])
     line_parts = [ '-' * (width + 2) ] * columns
@@ -38,12 +41,14 @@ def gridstring(elements: Iterable, columns: int) -> str:
         output += hline + '\n'
     return output
 
+# De quoi représenter une grille de 5 colonnes
 grid5str = partial(gridstring, columns=5)
 
 def positions(pawns: int, slots: range, _other_positions: list=None):
     '''
     Retourne toutes les combinaisons des index où peuvent se trouver
-    pawns pions parmi slots cases'''
+    pawns pions parmi slots cases
+    '''
     if _other_positions is None:
         _other_positions = [ ]
     if pawns < len(slots) + 1:
@@ -55,8 +60,14 @@ def positions(pawns: int, slots: range, _other_positions: list=None):
                 yield from positions(pawns - 1, range(slot + 1, max(slots) + 1), actual_positions)
 
 class ScoreGrid:
-
+    '''
+    Classe de manipulation de la grille des dames.
+    Met à disposition le calcul des scores de la grille pour chaque dame ajoutée.
+    '''
     def __init__(self, *indexes: int):
+        '''
+        indexes : entiers, index de la grille sur laquelle sont posées les dames
+        '''
         self.scores = [ 0 ] * 25
         self.queens = [ ]
         for index in indexes:
@@ -64,7 +75,8 @@ class ScoreGrid:
     
     def _get_scores(self, index: int) -> list:
         '''
-        Retourne la grille des scores de la position de la dame
+        Retourne la grille des scores de la position de la dame.
+        Chaque case à portée de la dame vaut 1, les autres 0.
         '''
         # Initialisation des scores de la position
         scores = [ 0 ] * 25
@@ -97,13 +109,18 @@ class ScoreGrid:
         return scores
 
     def set_queen(self, index: int) -> None:
+        '''
+        Ajout d'une dame sur la grille.
+        index est l'index de la case sur laquelle la dame est ajourée.
+        '''
         if index in self.queens:
-            raise ValueError(f'Queen already set at index {index}')
+            return
         if index not in range(25):
             raise ValueError(f'Index must be in {range(25)}, not {index}')
         self.queens.append(index)
+        # On calcule le score de la dame...
         queen_score = self._get_scores(index)
-        # print(grid5str(queen_score))
+        # ... qu'on ajoute aux scores existants de la grille - donc des autres dames
         for i in range(25):
             self.scores[i] += queen_score[i]
 
