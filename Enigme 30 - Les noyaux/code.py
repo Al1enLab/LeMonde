@@ -12,6 +12,8 @@ class StonesThrower:
     def throw(self, amount: int=1) -> tuple:
         '''Retourne amount lancers de noyaux sous la forme d'un tuple contenant des tuples.
         Chaque tuple comporte une série de couleurs tirées au hasard dans self.stones'''
+        # Court mais pas simple à comprendre
+        # return tuple([ tuple([ random.choice(stone) for stone in self.stones ]) for _ in range(amount)])
         output = [ ]
         for _ in range(amount):
             output.append(tuple([ random.choice(stone) for stone in self.stones ]))
@@ -74,6 +76,6 @@ def simulate(throws: int, normal: int, loaded: int):
     print()
 
 if __name__ == '__main__':
-    simulate(throws=100000, normal=8, loaded=0)
-    simulate(throws=100000, normal=4, loaded=4)
-    simulate(throws=100000, normal=0, loaded=8)
+    simulate(throws=1000000, normal=8, loaded=0)
+    simulate(throws=1000000, normal=4, loaded=4)
+    simulate(throws=1000000, normal=0, loaded=8)
