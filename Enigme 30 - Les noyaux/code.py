@@ -74,6 +74,6 @@ def simulate(throws: int, normal: int, loaded: int):
     print()
 
 if __name__ == '__main__':
-    simulate(100000, 8, 0)
-    simulate(100000, 4, 4)
-    simulate(100000, 0, 8)
+    simulate(throws=100000, normal=8, loaded=0)
+    simulate(throws=100000, normal=4, loaded=4)
+    simulate(throws=100000, normal=0, loaded=8)
