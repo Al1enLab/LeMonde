@@ -2,7 +2,7 @@ import random
 from typing import Hashable, Iterable, NamedTuple
 
 basic_stone = ( 'black', 'white' )
-loaded_stone = ( 'black', 'black', 'black', 'white' )
+loaded_stone = ( 'black', ) * 3 + ( 'white', )
 
 class StonesThrower:
     '''De quoi simuler le jet d'un ensemble de noyaux'''
