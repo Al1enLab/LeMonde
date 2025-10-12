@@ -5,15 +5,30 @@ J'ai déjà codé les permutations, je vais me servir des permutation du module 
 from itertools import permutations
 import math
 
-class CodeNumbers:
-    '''Classe permettant d'itérer au travers des deux nombres à additionner - ou plus précisément:
-    des chiffres composant les deux nombes à additionner'''
+# Retourne l'entier (base 10) composé des chiffres digits
+# On peut passer par un ''.join() mais c'est moche et ça foire sur les 0 initiaux, s'il y en a
+# digits2number = lambda digits: sum( digits[index] * pow(10, len(digits) - (index + 1)) for index in range(len(digits)) )
+digits2number = lambda digits: sum( digits[::-1][index] * pow(10, index) for index in range(len(digits)))
 
-    def __init__(self, *digits: int) -> None:
+class CodeNumbers:
+    '''Classse CodeNumbers
+    Itère parmi les nombres répondant aux conditions suivantes :
+    - tous les chiffres doivent être différents
+    - la somme des chiffres en colonne doit toujours être supérieure à 10 (en comptant la retenue)
+    Pour que les chiffres soient tous différents, on itère parmi les permutations des chiffres disponibles.
+    Pour s'assurer que toutes les additions donnent une retenue, on vérifie que:
+    - la somme des chiffres de tous les rangs soit supérieure ou égale à 9
+    - la somme des chiffres du dernier rang soit supérieure ou égale à 10
+    '''
+
+    def __init__(self, digits: int) -> None:
+        '''digits est les tuple comporant l'ensemble des chiffres à utiliser pour la recherche
+        des nombres répondant aux contraintes'''
         if len(digits) % 2 != 0:
             raise ValueError('Le nombre de chiffres doit être pair')
         self.digits: tuple[int] = digits
         self.__number_len = int(len(self.digits) / 2)
+        # Itérateur des permutations
         self.__permutations = None
     
     def __iter__(self):
@@ -21,41 +36,19 @@ class CodeNumbers:
         return self
     
     def __next__(self) -> tuple[int]:
-        permutation = next(self.__permutations)
-        return (permutation[:self.__number_len], permutation[self.__number_len:])
+        '''On retourne le prochain couple de nombres répondant aux confitions'''
+        condition_check = False
+        while not condition_check:
+            permutation = next(self.__permutations)
+            digits1 = permutation[:self.__number_len]
+            digits2 = permutation[self.__number_len:]
+            # Vérification de la condition de la retenue
+            # On commence par calculer la somme des chiffres...
+            sums = tuple( sum(digits) for digits in zip(digits1, digits2) )
+            # ... et on vérifie que toutes les sommes sont supérieures ou égales à 9 et la dernière à 10
+            condition_check = all([ s >= 9 for s in sums ]) and sums[-1] >= 10
+        return digits2number(digits1), digits2number(digits2)
     
-# Retourne l'entier (base 10) composé des chiffres digits
-# On peut passer par un ''.join() mais c'est moche et ça foire sur les 0 initiaux, s'il y en a
-digits2number = lambda digits: sum( digits[index] * pow(10, len(digits) - (index + 1)) for index in range(len(digits)) )
-
-def check_digits_sums(digits1: tuple[int], digits2: tuple[int]) -> bool:
-    '''Retourne vrai si:
-    - les longueurs des deux tuples sont identiques
-    - la somme des nombres de rangs identiques dans les deux tuples est
-        - supérieure à 10 pour le dernier rang
-        - supérieure à 9 pour les autres rangs (grâce à la retenue)
-    Sinon retourne faux
-    '''
-    if len(digits1) != len(digits2):
-        return False
-    carry = 0
-    for index in range(len(digits1) - 1, -1, -1):
-        if digits1[index] + digits2[index] + carry < 10:
-            return False
-        carry = 1
-    return True
-
-def find_codes(digits: tuple[int]) -> set:
-    '''Trouve tous les codes possibles avec des nombres répondant aux règles du problème'''
-    output: set = set()
-    for digits1, digits2 in CodeNumbers(*digits):
-        if check_digits_sums(digits1, digits2):
-            number1, number2 = digits2number(digits1), digits2number(digits2)
-            key = tuple(sorted((number1, number2), reverse=True))
-            key += (number1 + number2, )
-            output.add(key)
-    return output
-
 def summary(digits: tuple[int], codes: set) -> None:
     '''Affiche le sommaire des recherches'''
 
@@ -92,7 +85,15 @@ def summary(digits: tuple[int], codes: set) -> None:
 
     print()
     print(f'--> Plus grand code : {biggest} <--')
-    
-digits = (2, 3, 4, 5, 6, 7, 8, 9)
-codes = find_codes(digits)
-summary(digits, codes)
+
+if __name__ == '__main__':
+    digits = (2, 3, 4, 5, 6, 7, 8, 9)
+    codes = set()
+    # On itére parmi les nombres répondant aux critères
+    for number1, number2 in CodeNumbers(digits):
+        # On stocke chaque résultat dans un set pour éviter les doublons
+        key = tuple(sorted((number1, number2), reverse=True))
+        key += (number1 + number2, )
+        codes.add(key)
+
+    summary(digits=digits, codes=codes)
